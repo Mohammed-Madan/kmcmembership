@@ -1,42 +1,79 @@
 // server/routes/memberRoutes.js
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const Member = require('../models/Member');
+
+// Helper function to calculate years between two dates
+function calculateYearsBetweenDates(startDate, endDate) {
+  // Calculate the time difference in milliseconds
+  const timeDiff = endDate.getTime() - startDate.getTime();
+  
+  // Convert milliseconds to years
+  // Using 365.25 days per year to account for leap years
+  const yearsDiff = timeDiff / (1000 * 60 * 60 * 24 * 365.25);
+  
+  return yearsDiff;
+}
 
 // Get all members
 router.get('/', async (req, res) => {
   try {
     const members = await Member.find({});
+    const updatedMembers = [];
     
-    // Calculate updated balances based on joining date
-    const updatedMembers = members.map(member => {
+    // Track if any balances were updated and need to be saved
+    const membersToUpdate = [];
+    
+    for (const member of members) {
       const joiningDate = new Date(member.joiningDate);
       const currentDate = new Date();
       
-      // Calculate years since joining
-      const yearDiff = currentDate.getFullYear() - joiningDate.getFullYear();
-      const monthDiff = currentDate.getMonth() - joiningDate.getMonth();
-      const dayDiff = currentDate.getDate() - joiningDate.getDate();
+      // Get the last date annual fees were charged or use joining date if not set
+      const lastFeeDate = member.lastFeeDate ? new Date(member.lastFeeDate) : new Date(member.joiningDate);
       
-      // Adjust year difference if needed based on month and day
-      let yearsSinceJoining = yearDiff;
-      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-        yearsSinceJoining--;
+      // Calculate how many years have passed since the last fee was charged
+      const yearsSinceLastFee = calculateYearsBetweenDates(lastFeeDate, currentDate);
+      
+      // If at least one year has passed since the last fee was charged, add the fee
+      if (yearsSinceLastFee >= 1) {
+        // Round down to whole years
+        const wholeYears = Math.floor(yearsSinceLastFee);
+        const feeToAdd = 25000 * wholeYears;
+        
+        // Add the fee to the balance
+        member.balance += feeToAdd;
+        
+        // Update the lastFeeDate by adding the exact number of years charged
+        const newLastFeeDate = new Date(lastFeeDate);
+        newLastFeeDate.setFullYear(lastFeeDate.getFullYear() + wholeYears);
+        member.lastFeeDate = newLastFeeDate;
+        
+        console.log(`Adding ${feeToAdd} TZS to ${member.name} for ${wholeYears} years`);
+        membersToUpdate.push(member);
       }
       
-      // Calculate what the total expected annual fees would be
-      const expectedFees = 25000 * (yearsSinceJoining + 1);
+      // Calculate years since joining for expected balance calculation
+      const yearsSinceJoining = calculateYearsBetweenDates(joiningDate, currentDate);
+      const expectedFees = 25000 * (Math.floor(yearsSinceJoining) + 1); // +1 for initial fee
       
-      // Return the document with its actual balance (which includes payments made)
-      // and a calculated field showing the total expected fees since joining
-      return {
+      // Add the member to the response array
+      updatedMembers.push({
         ...member._doc,
-        calculatedBalance: expectedFees
-      };
-    });
+        expectedBalance: expectedFees
+      });
+    }
+    
+    // Save all members that need balance updates
+    if (membersToUpdate.length > 0) {
+      const savePromises = membersToUpdate.map(member => member.save());
+      await Promise.all(savePromises);
+      console.log(`Updated balances for ${membersToUpdate.length} members`);
+    }
     
     res.json(updatedMembers);
   } catch (error) {
+    console.error('Error updating member balances:', error);
     res.status(500).json({ message: error.message });
   }
 });
