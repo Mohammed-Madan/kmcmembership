@@ -14,7 +14,7 @@ const app = express();
 // Configure CORS for deployment
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://kmc-membership.onrender.com', 'https://kmc-membership-frontend.onrender.com'] 
+    ? ['https://kmcmembership.onrender.com', 'https://kmc-membership-frontend.onrender.com'] 
     : 'http://localhost:3000',
   credentials: true
 }));
