@@ -19,7 +19,39 @@ const App = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(`${baseURL}/members`);
-      setMembers(data);
+      
+      // Process members to add annual fees
+      const processedMembers = data.map(member => {
+        const joinDate = new Date(member.joiningDate);
+        const today = new Date();
+        
+        // Calculate complete years since joining
+        let yearDiff = today.getFullYear() - joinDate.getFullYear();
+        
+        // Adjust year difference if we haven't reached the anniversary date yet
+        if (
+          today.getMonth() < joinDate.getMonth() || 
+          (today.getMonth() === joinDate.getMonth() && today.getDate() < joinDate.getDate())
+        ) {
+          yearDiff--;
+        }
+        
+        // Make sure we don't count negative years (for future join dates)
+        yearDiff = Math.max(0, yearDiff);
+        
+        // Calculate what the total balance should be based on years passed
+        // Initial fee of 25000 + 25000 for each completed year after joining
+        const expectedBalance = 25000 * (yearDiff + 1);
+        
+        // Server might already calculate this, but we're doing it client-side to ensure it's correct
+        return {
+          ...member,
+          yearsActive: yearDiff,
+          expectedBalance: expectedBalance
+        };
+      });
+      
+      setMembers(processedMembers);
       setError(null);
     } catch (err) {
       setError('Failed to fetch members: ' + (err.response?.data?.message || err.message));
@@ -31,6 +63,14 @@ const App = () => {
 
   useEffect(() => {
     fetchMembers();
+    
+    // Set up an interval to check for annual fees every day
+    // In a production app, this would be better handled by the server
+    const intervalId = setInterval(() => {
+      fetchMembers();
+    }, 24 * 60 * 60 * 1000); // 24 hours
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleAddMember = async (memberData) => {
@@ -68,18 +108,32 @@ const App = () => {
 
   return (
     <div className="app">
-      <Navbar />
+      <Navbar onAddMemberClick={() => setShowAddModal(true)} />
       <div className="container" style={{ padding: '1rem', paddingBottom: '5rem' }}>
         {error && (
-          <div style={{ backgroundColor: '#f8d7da', color: '#721c24', padding: '0.75rem', marginBottom: '1rem', borderRadius: '4px' }}>
+          <div style={{ 
+            backgroundColor: '#f8d7da', 
+            color: '#721c24', 
+            padding: '0.75rem', 
+            marginBottom: '1rem', 
+            borderRadius: '4px' 
+          }}>
             {error}
+            <button 
+              onClick={() => setError(null)} 
+              style={{ 
+                float: 'right', 
+                background: 'none', 
+                border: 'none', 
+                color: '#721c24', 
+                cursor: 'pointer', 
+                fontWeight: 'bold' 
+              }}
+            >
+              ×
+            </button>
           </div>
         )}
-        
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h1>KMC Membership</h1>
-          <button onClick={() => setShowAddModal(true)}>Add Member</button>
-        </div>
         
         <MemberList
           members={members}

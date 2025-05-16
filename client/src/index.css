@@ -46,6 +46,12 @@ label {
   display: block;
 }
 
+.filter-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .modal {
   position: fixed;
   top: 0;
@@ -67,9 +73,31 @@ label {
   max-width: 500px;
 }
 
+.mobile-member-list {
+  display: grid;
+  grid-gap: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  .filter-container {
+    margin-top: 10px;
+  }
+  
   .modal-content {
     width: 95%;
     padding: 15px;
+  }
+  
+  .container {
+    padding: 10px;
   }
 }

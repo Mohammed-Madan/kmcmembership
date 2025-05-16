@@ -1,10 +1,20 @@
 import React from 'react';
 
-const Navbar = () => {
+const Navbar = ({ onAddMemberClick }) => {
   return (
     <nav style={{ backgroundColor: '#4361ee', padding: '1rem', color: 'white' }}>
       <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 style={{ fontSize: '1.5rem', margin: 0 }}>KMC Membership</h1>
+        <button 
+          onClick={onAddMemberClick}
+          style={{ 
+            backgroundColor: 'white', 
+            color: '#4361ee',
+            fontWeight: 'bold'
+          }}
+        >
+          Add Member
+        </button>
       </div>
     </nav>
   );
