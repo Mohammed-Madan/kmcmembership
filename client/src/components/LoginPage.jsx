@@ -28,7 +28,7 @@ const LoginPage = ({ onLogin }) => {
       await new Promise(resolve => setTimeout(resolve, 800));
       
       // Check credentials (in a real app, this would be done server-side)
-      if (username === 'admin' && password === 'kmc2023') {
+      if (username === 'Mustafa' && password === '123') {
         // Store auth token or user info in localStorage for session persistence
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('user', JSON.stringify({ username }));
@@ -50,8 +50,6 @@ const LoginPage = ({ onLogin }) => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>KMC Membership</h1>
-          <p>Login to manage members</p>
         </div>
         
         {error && (
