@@ -6,6 +6,10 @@ const LoginPage = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Get login credentials from environment variables or use defaults
+  const validUsername = import.meta.env.VITE_LOGIN_USERNAME || 'admin';
+  const validPassword = import.meta.env.VITE_LOGIN_PASSWORD || 'kmc2023';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -22,19 +26,18 @@ const LoginPage = ({ onLogin }) => {
     
     try {
       // In a real app, you would make an API call here to authenticate
-      // For this example, we'll simulate a login with hardcoded credentials
+      // For this example, we'll simulate a login with environment variable credentials
       
       // Simulating API call with timeout
       await new Promise(resolve => setTimeout(resolve, 800));
       
       // Check credentials (in a real app, this would be done server-side)
-      if (username === 'Mustafa' && password === '123') {
-        // Store auth token or user info in localStorage for session persistence
+      if (username === validUsername && password === validPassword) {
+        // Store login state in localStorage for session persistence
         localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('user', JSON.stringify({ username }));
         
         // Call the onLogin function passed from parent component
-        onLogin({ username });
+        onLogin();
       } else {
         setError('Invalid username or password');
       }
@@ -50,6 +53,8 @@ const LoginPage = ({ onLogin }) => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
+          <h1>KMC Membership</h1>
+          <p>Login to manage members</p>
         </div>
         
         {error && (
@@ -96,5 +101,6 @@ const LoginPage = ({ onLogin }) => {
     </div>
   );
 };
+
 
 export default LoginPage;

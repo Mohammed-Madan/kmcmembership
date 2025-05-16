@@ -11,7 +11,6 @@ const App = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
 
   // Create a base URL for API calls based on environment
   const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -24,9 +23,7 @@ const App = () => {
       const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
       
       if (isLoggedIn) {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
         setIsAuthenticated(true);
-        setCurrentUser(user);
       }
     };
     
@@ -126,16 +123,14 @@ const App = () => {
     }
   };
 
-  const handleLogin = (user) => {
+  const handleLogin = () => {
     setIsAuthenticated(true);
-    setCurrentUser(user);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('user');
     setIsAuthenticated(false);
-    setCurrentUser(null);
   };
 
   // If user is not authenticated, show login page
@@ -148,7 +143,6 @@ const App = () => {
       <Navbar 
         onAddMemberClick={() => setShowAddModal(true)} 
         onLogout={handleLogout}
-        username={currentUser?.username}
       />
       <div className="container" style={{ padding: '1rem', paddingBottom: '5rem' }}>
         {error && (
