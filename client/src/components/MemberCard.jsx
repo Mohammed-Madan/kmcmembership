@@ -10,6 +10,11 @@ const MemberCard = ({ member, onDelete, onPayment }) => {
     return `${day}/${month}/${year}`;
   };
 
+  // Add styling for negative balance
+  const balanceStyle = member.balance < 0 
+    ? { color: 'green', fontWeight: 'bold' } 
+    : {};
+
   return (
     <div 
       style={{
@@ -35,7 +40,10 @@ const MemberCard = ({ member, onDelete, onPayment }) => {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
           <span style={{ fontWeight: '500' }}>Balance:</span>
-          <span>{member.balance.toLocaleString()} TZS</span>
+          <span style={balanceStyle}>
+            {member.balance.toLocaleString()} TZS
+            {member.balance < 0 ? ' (Credit)' : ''}
+          </span>
         </div>
       </div>
       

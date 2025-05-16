@@ -113,6 +113,7 @@ router.post('/:id/payment', async (req, res) => {
     }
 
     // Subtract the payment amount from the balance
+    // Note: This allows balance to go negative
     member.balance -= Number(amount);
     await member.save();
 

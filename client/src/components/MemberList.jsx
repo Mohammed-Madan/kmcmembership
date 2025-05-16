@@ -110,8 +110,13 @@ const MemberList = ({ members, onDelete, onPayment, loading }) => {
                         return `${day}/${month}/${year}`;
                       })()}
                     </td>
-                    <td style={{ padding: '0.75rem' }}>
+                    <td style={{ 
+                        padding: '0.75rem',
+                        color: member.balance < 0 ? 'green' : 'inherit',
+                        fontWeight: member.balance < 0 ? 'bold' : 'normal' 
+                      }}>
                       {member.balance.toLocaleString()}
+                      {member.balance < 0 ? ' (Credit)' : ''}
                     </td>
                     <td style={{ padding: '0.75rem', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
                       <button
