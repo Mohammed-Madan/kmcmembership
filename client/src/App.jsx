@@ -3,17 +3,35 @@ import axios from 'axios';
 import Navbar from './components/Navbar';
 import MemberList from './components/MemberList';
 import AddMemberForm from './components/AddMemberForm';
+import LoginPage from './components/LoginPage';
 
 const App = () => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [error, setError] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Create a base URL for API calls based on environment
   const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
   
   console.log("API URL:", baseURL); // For debugging during deployment
+
+  // Check if user is already logged in (from localStorage)
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      
+      if (isLoggedIn) {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        setIsAuthenticated(true);
+        setCurrentUser(user);
+      }
+    };
+    
+    checkAuthStatus();
+  }, []);
 
   const fetchMembers = async () => {
     try {
@@ -62,16 +80,18 @@ const App = () => {
   };
 
   useEffect(() => {
-    fetchMembers();
-    
-    // Set up an interval to check for annual fees every day
-    // In a production app, this would be better handled by the server
-    const intervalId = setInterval(() => {
+    if (isAuthenticated) {
       fetchMembers();
-    }, 24 * 60 * 60 * 1000); // 24 hours
-    
-    return () => clearInterval(intervalId);
-  }, []);
+      
+      // Set up an interval to check for annual fees every day
+      // In a production app, this would be better handled by the server
+      const intervalId = setInterval(() => {
+        fetchMembers();
+      }, 24 * 60 * 60 * 1000); // 24 hours
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [isAuthenticated]);
 
   const handleAddMember = async (memberData) => {
     try {
@@ -106,9 +126,30 @@ const App = () => {
     }
   };
 
+  const handleLogin = (user) => {
+    setIsAuthenticated(true);
+    setCurrentUser(user);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+  };
+
+  // If user is not authenticated, show login page
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
   return (
     <div className="app">
-      <Navbar onAddMemberClick={() => setShowAddModal(true)} />
+      <Navbar 
+        onAddMemberClick={() => setShowAddModal(true)} 
+        onLogout={handleLogout}
+        username={currentUser?.username}
+      />
       <div className="container" style={{ padding: '1rem', paddingBottom: '5rem' }}>
         {error && (
           <div style={{ 
