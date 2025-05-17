@@ -23,7 +23,7 @@ const memberSchema = mongoose.Schema(
     lastFeeDate: {
       type: Date,
       required: false,
-      // Will be set to the joining date when a member is created
+      // Will be set based on joining date
     },
   },
   {
@@ -33,11 +33,27 @@ const memberSchema = mongoose.Schema(
   }
 );
 
-// Pre-save middleware to set lastFeeDate to joining date if not already set
+// Pre-save middleware to set lastFeeDate to same day/month but current year
 memberSchema.pre('save', function(next) {
   // Only set lastFeeDate if it's a new document or lastFeeDate isn't set
   if (this.isNew || !this.lastFeeDate) {
-    this.lastFeeDate = this.joiningDate;
+    const joiningDate = new Date(this.joiningDate);
+    const currentDate = new Date();
+    
+    // Create a new date with joining date's day/month but current year
+    const lastFeeDate = new Date(
+      currentDate.getFullYear(),
+      joiningDate.getMonth(),
+      joiningDate.getDate()
+    );
+    
+    // If this date is in the future (joining month/day hasn't occurred yet this year)
+    // then use previous year instead
+    if (lastFeeDate > currentDate) {
+      lastFeeDate.setFullYear(currentDate.getFullYear() - 1);
+    }
+    
+    this.lastFeeDate = lastFeeDate;
   }
   next();
 });

@@ -26,11 +26,10 @@ router.get('/', async (req, res) => {
     const membersToUpdate = [];
     
     for (const member of members) {
-      const joiningDate = new Date(member.joiningDate);
       const currentDate = new Date();
       
-      // Get the last date annual fees were charged or use joining date if not set
-      const lastFeeDate = member.lastFeeDate ? new Date(member.lastFeeDate) : new Date(member.joiningDate);
+      // Get the last date annual fees were charged
+      const lastFeeDate = new Date(member.lastFeeDate);
       
       // Calculate how many years have passed since the last fee was charged
       const yearsSinceLastFee = calculateYearsBetweenDates(lastFeeDate, currentDate);
@@ -53,14 +52,9 @@ router.get('/', async (req, res) => {
         membersToUpdate.push(member);
       }
       
-      // Calculate years since joining for expected balance calculation
-      const yearsSinceJoining = calculateYearsBetweenDates(joiningDate, currentDate);
-      const expectedFees = 25000 * (Math.floor(yearsSinceJoining) + 1); // +1 for initial fee
-      
-      // Add the member to the response array
+      // Add the member to the response array with their current data
       updatedMembers.push({
-        ...member._doc,
-        expectedBalance: expectedFees
+        ...member._doc
       });
     }
     
@@ -83,6 +77,8 @@ router.post('/', async (req, res) => {
   try {
     const { name, phoneNumber, joiningDate, balance } = req.body;
 
+    // Creating the member without explicitly setting lastFeeDate
+    // The pre-save middleware will handle setting the lastFeeDate properly
     const member = await Member.create({
       name,
       phoneNumber,

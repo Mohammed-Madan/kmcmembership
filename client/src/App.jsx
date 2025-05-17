@@ -34,39 +34,7 @@ const App = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(`${baseURL}/members`);
-      
-      // Process members to add annual fees
-      const processedMembers = data.map(member => {
-        const joinDate = new Date(member.joiningDate);
-        const today = new Date();
-        
-        // Calculate complete years since joining
-        let yearDiff = today.getFullYear() - joinDate.getFullYear();
-        
-        // Adjust year difference if we haven't reached the anniversary date yet
-        if (
-          today.getMonth() < joinDate.getMonth() || 
-          (today.getMonth() === joinDate.getMonth() && today.getDate() < joinDate.getDate())
-        ) {
-          yearDiff--;
-        }
-        
-        // Make sure we don't count negative years (for future join dates)
-        yearDiff = Math.max(0, yearDiff);
-        
-        // Calculate what the total balance should be based on years passed
-        // Initial fee of 25000 + 25000 for each completed year after joining
-        const expectedBalance = 25000 * (yearDiff + 1);
-        
-        // Server might already calculate this, but we're doing it client-side to ensure it's correct
-        return {
-          ...member,
-          yearsActive: yearDiff,
-          expectedBalance: expectedBalance
-        };
-      });
-      
-      setMembers(processedMembers);
+      setMembers(data);
       setError(null);
     } catch (err) {
       setError('Failed to fetch members: ' + (err.response?.data?.message || err.message));
