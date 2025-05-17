@@ -54,7 +54,9 @@ router.get('/', async (req, res) => {
       
       // Add the member to the response array with their current data
       updatedMembers.push({
-        ...member._doc
+        ...member._doc,
+        // Ensure lastFeeDate is included in the response
+        lastFeeDate: member.lastFeeDate
       });
     }
     

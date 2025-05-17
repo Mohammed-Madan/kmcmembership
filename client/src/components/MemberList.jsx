@@ -28,6 +28,31 @@ const MemberList = ({ members, onDelete, onPayment, loading }) => {
     setShowPaymentModal(false);
   };
 
+  // Helper function to calculate days until next fee
+  const calculateDaysUntilNextFee = (lastFeeDate) => {
+    const today = new Date();
+    const lastFee = new Date(lastFeeDate);
+    
+    // Create next fee date (one year after last fee)
+    const nextFeeDate = new Date(lastFee);
+    nextFeeDate.setFullYear(lastFee.getFullYear() + 1);
+    
+    // Calculate difference in days
+    const diffTime = nextFeeDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays;
+  };
+
+  // Format the date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   if (loading) {
     return <div>Loading members...</div>;
   }
@@ -73,6 +98,7 @@ const MemberList = ({ members, onDelete, onPayment, loading }) => {
                 member={member}
                 onDelete={onDelete}
                 onPayment={handlePaymentClick}
+                daysUntilNextFee={calculateDaysUntilNextFee(member.lastFeeDate)}
               />
             ))
           )}
@@ -85,6 +111,8 @@ const MemberList = ({ members, onDelete, onPayment, loading }) => {
                 <th style={{ padding: '0.75rem', textAlign: 'left' }}>Name</th>
                 <th style={{ padding: '0.75rem', textAlign: 'left' }}>Phone Number</th>
                 <th style={{ padding: '0.75rem', textAlign: 'left' }}>Joining Date</th>
+                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Last Fee Date</th>
+                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Next Fee Due</th>
                 <th style={{ padding: '0.75rem', textAlign: 'left' }}>Actual Balance (TZS)</th>
                 <th style={{ padding: '0.75rem', textAlign: 'center' }}>Actions</th>
               </tr>
@@ -92,48 +120,51 @@ const MemberList = ({ members, onDelete, onPayment, loading }) => {
             <tbody>
               {filteredMembers.length === 0 ? (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', padding: '1rem' }}>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '1rem' }}>
                     No members found
                   </td>
                 </tr>
               ) : (
-                filteredMembers.map((member) => (
-                  <tr key={member._id} style={{ borderBottom: '1px solid #ddd' }}>
-                    <td style={{ padding: '0.75rem' }}>{member.name}</td>
-                    <td style={{ padding: '0.75rem' }}>{member.phoneNumber}</td>
-                    <td style={{ padding: '0.75rem' }}>
-                      {(() => {
-                        const date = new Date(member.joiningDate);
-                        const day = String(date.getDate()).padStart(2, '0');
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const year = date.getFullYear();
-                        return `${day}/${month}/${year}`;
-                      })()}
-                    </td>
-                    <td style={{ 
-                        padding: '0.75rem',
-                        color: member.balance < 0 ? 'green' : 'inherit',
-                        fontWeight: member.balance < 0 ? 'bold' : 'normal' 
-                      }}>
-                      {member.balance.toLocaleString()}
-                      {member.balance < 0 ? ' (Credit)' : ''}
-                    </td>
-                    <td style={{ padding: '0.75rem', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
-                      <button
-                        onClick={() => handlePaymentClick(member)}
-                        style={{ backgroundColor: '#4361ee' }}
-                      >
-                        Payment
-                      </button>
-                      <button
-                        onClick={() => onDelete(member._id)}
-                        style={{ backgroundColor: '#e63946' }}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                filteredMembers.map((member) => {
+                  const daysUntil = calculateDaysUntilNextFee(member.lastFeeDate);
+                  return (
+                    <tr key={member._id} style={{ borderBottom: '1px solid #ddd' }}>
+                      <td style={{ padding: '0.75rem' }}>{member.name}</td>
+                      <td style={{ padding: '0.75rem' }}>{member.phoneNumber}</td>
+                      <td style={{ padding: '0.75rem' }}>{formatDate(member.joiningDate)}</td>
+                      <td style={{ padding: '0.75rem' }}>{formatDate(member.lastFeeDate)}</td>
+                      <td style={{ 
+                          padding: '0.75rem',
+                          color: daysUntil <= 30 ? '#e63946' : daysUntil <= 90 ? '#fd7e14' : 'inherit',
+                          fontWeight: daysUntil <= 30 ? 'bold' : 'normal'
+                        }}>
+                        {daysUntil} days
+                      </td>
+                      <td style={{ 
+                          padding: '0.75rem',
+                          color: member.balance < 0 ? 'green' : 'inherit',
+                          fontWeight: member.balance < 0 ? 'bold' : 'normal' 
+                        }}>
+                        {member.balance.toLocaleString()}
+                        {member.balance < 0 ? ' (Credit)' : ''}
+                      </td>
+                      <td style={{ padding: '0.75rem', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                        <button
+                          onClick={() => handlePaymentClick(member)}
+                          style={{ backgroundColor: '#4361ee' }}
+                        >
+                          Payment
+                        </button>
+                        <button
+                          onClick={() => onDelete(member._id)}
+                          style={{ backgroundColor: '#e63946' }}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MemberCard = ({ member, onDelete, onPayment }) => {
+const MemberCard = ({ member, onDelete, onPayment, daysUntilNextFee }) => {
   // Format the date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -14,6 +14,13 @@ const MemberCard = ({ member, onDelete, onPayment }) => {
   const balanceStyle = member.balance < 0 
     ? { color: 'green', fontWeight: 'bold' } 
     : {};
+    
+  // Add styling for days until next fee
+  const feeStyle = daysUntilNextFee <= 30 
+    ? { color: '#e63946', fontWeight: 'bold' } 
+    : daysUntilNextFee <= 90 
+      ? { color: '#fd7e14' } 
+      : {};
 
   return (
     <div 
@@ -36,6 +43,16 @@ const MemberCard = ({ member, onDelete, onPayment }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
           <span style={{ fontWeight: '500' }}>Joined:</span>
           <span>{formatDate(member.joiningDate)}</span>
+        </div>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <span style={{ fontWeight: '500' }}>Last Fee:</span>
+          <span>{formatDate(member.lastFeeDate)}</span>
+        </div>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <span style={{ fontWeight: '500' }}>Next Fee Due:</span>
+          <span style={feeStyle}>{daysUntilNextFee} days</span>
         </div>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
