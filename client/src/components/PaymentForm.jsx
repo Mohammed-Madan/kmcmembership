@@ -13,11 +13,8 @@ const PaymentForm = ({ member, onSubmit, onClose }) => {
       return;
     }
     
-    // Make sure payment isn't greater than current balance
-    if (paymentAmount > member.balance) {
-      alert('Payment amount cannot exceed current balance');
-      return;
-    }
+    // No longer need to validate if payment is greater than balance
+    // since we now allow negative balances
     
     onSubmit(amount);
   };
@@ -54,7 +51,7 @@ const PaymentForm = ({ member, onSubmit, onClose }) => {
               onChange={(e) => setAmount(e.target.value)}
               required
               min="1"
-              max={member.balance}
+              // Removed the max constraint: max={member.balance}
             />
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
