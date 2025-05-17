@@ -6,7 +6,7 @@ const AddMemberForm = ({ onClose, onSubmit }) => {
   const [joiningDate, setJoiningDate] = useState(
     new Date().toISOString().split('T')[0]
   );
-  const [balance, setBalance] = useState(25000);
+  const [balance, setBalance] = useState('25000'); // store as string
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -14,7 +14,7 @@ const AddMemberForm = ({ onClose, onSubmit }) => {
       name,
       phoneNumber,
       joiningDate,
-      balance,
+      balance: Number(balance), // convert to number on submit
     });
   };
 
@@ -59,7 +59,7 @@ const AddMemberForm = ({ onClose, onSubmit }) => {
               type="number"
               id="balance"
               value={balance}
-              onChange={(e) => setBalance(Number(e.target.value))}
+              onChange={(e) => setBalance(e.target.value)} // allow "-" and "0"
               required
             />
           </div>

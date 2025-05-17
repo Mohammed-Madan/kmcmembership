@@ -87,7 +87,7 @@ router.post('/', async (req, res) => {
       name,
       phoneNumber,
       joiningDate: joiningDate || Date.now(),
-      balance: balance || 25000,
+      balance: balance !== undefined ? balance : 25000, // ✅ allows 0
     });
 
     if (member) {
